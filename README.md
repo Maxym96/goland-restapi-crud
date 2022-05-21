@@ -1,8 +1,6 @@
             ## CRUD REST-API ##
 
-########################################
             Get Event (by ID)
-########################################
 
         GET http://localhost:8081/v1/event/
 
@@ -14,17 +12,13 @@ Headers:
 
         return Event from db
 
-########################################
             Get All Events
-########################################
 
 GET http://localhost:8081/v1/event/all
 
 return list all Events from db
 
-########################################
             Add new Event
-########################################
 
 POST http://localhost:8081/v1/event/add
 
@@ -38,9 +32,7 @@ Body:
 
 return added Event (id, name, description and date_and_time)
 
-########################################
             Update Event
-########################################
 
 PUT http://localhost:8081/v1/event/update
 
@@ -55,9 +47,7 @@ Body:
 
 return updated Event with new fields (name, description and date_and_time)
 
-########################################
             Delete Event
-########################################
 
 DELETE http://localhost:8081/v1/event/delete
 
@@ -68,5 +58,3 @@ DELETE http://localhost:8081/v1/event/delete
         ID field IS REQUIRED!
 
 return true if Event is deleted from db
-
-########################################
