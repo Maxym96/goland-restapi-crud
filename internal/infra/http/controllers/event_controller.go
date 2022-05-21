@@ -2,11 +2,9 @@ package controllers
 
 import (
 	"fmt"
-	"net/http"
-	"strconv"
-
-	"github.com/go-chi/chi/v5"
 	"github.com/test_server/internal/domain/event"
+	"log"
+	"net/http"
 )
 
 type EventController struct {
@@ -40,28 +38,99 @@ func (c *EventController) FindAll() http.HandlerFunc {
 
 func (c *EventController) FindOne() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+		id := r.Header.Get("id")
+		log.Printf("id:%s", id)
+		eventFind, err := (*c.service).FindOne(id)
 		if err != nil {
-			fmt.Printf("EventController.FindOne(): %s", err)
+			log.Printf("EventController.FindOne(): %s", err)
 			err = internalServerError(w, err)
 			if err != nil {
-				fmt.Printf("EventController.FindOne(): %s", err)
-			}
-			return
-		}
-		event, err := (*c.service).FindOne(id)
-		if err != nil {
-			fmt.Printf("EventController.FindOne(): %s", err)
-			err = internalServerError(w, err)
-			if err != nil {
-				fmt.Printf("EventController.FindOne(): %s", err)
+				log.Printf("EventController.FindOne(): %s", err)
 			}
 			return
 		}
 
-		err = success(w, event)
+		err = success(w, eventFind)
 		if err != nil {
 			fmt.Printf("EventController.FindOne(): %s", err)
+		}
+	}
+}
+func (c *EventController) Create() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		name := r.PostFormValue("name")
+		description := r.PostFormValue("description")
+		dateAndTime := r.PostFormValue("date_and_time")
+
+		eventNew := event.Event{
+			ID:          "",
+			Name:        name,
+			Description: description,
+			DateAndTime: dateAndTime,
+		}
+		events, err := (*c.service).Create(eventNew)
+		if err != nil {
+			log.Printf("EventController.Create(): %s", err)
+			err = internalServerError(w, err)
+			if err != nil {
+				log.Printf("EventController.Create(): %s", err)
+			}
+			return
+		}
+
+		err = success(w, events)
+		if err != nil {
+			log.Printf("EventController.Create(): %s", err)
+		}
+	}
+}
+
+func (c *EventController) Update() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PostFormValue("id")
+		name := r.PostFormValue("name")
+		description := r.PostFormValue("description")
+		dateAndTime := r.PostFormValue("date_and_time")
+
+		event := event.Event{
+			ID:          id,
+			Name:        name,
+			Description: description,
+			DateAndTime: dateAndTime,
+		}
+		events, err := (*c.service).Update(event)
+		if err != nil {
+			log.Printf("EventController.Update(): %s", err)
+			err = internalServerError(w, err)
+			if err != nil {
+				log.Printf("EventController.Update(): %s", err)
+			}
+			return
+		}
+
+		err = success(w, events)
+		if err != nil {
+			log.Printf("EventController.Create(): %s", err)
+		}
+	}
+}
+func (c *EventController) Delete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.Header.Get("id")
+		events, err := (*c.service).Delete(id)
+		if err != nil {
+			log.Printf("EventController.Update(): %s", err)
+			err = internalServerError(w, err)
+			if err != nil {
+				log.Printf("EventController.Update(): %s", err)
+			}
+			return
+		}
+
+		err = success(w, events)
+		if err != nil {
+			log.Printf("EventController.Create(): %s", err)
 		}
 	}
 }

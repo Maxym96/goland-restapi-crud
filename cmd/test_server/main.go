@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/test_server/pkg/client/postgresql"
+	"log"
 	"os"
 	"os/signal"
 	"runtime/debug"
@@ -40,13 +42,20 @@ func main() {
 		fmt.Printf("Sent cancel to all threads...")
 	}()
 
+	//Connection to PostgreSQL
+	client, err := postgresql.NewClient()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println(client)
+
 	// Event
-	eventRepository := event.NewRepository()
+	eventRepository := event.NewRepository(client)
 	eventService := event.NewService(&eventRepository)
 	eventController := controllers.NewEventController(&eventService)
 
 	// HTTP Server
-	err := http.Server(
+	err = http.Server(
 		ctx,
 		http.Router(
 			eventController,

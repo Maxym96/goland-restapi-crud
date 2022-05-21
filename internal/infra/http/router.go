@@ -22,12 +22,19 @@ func Router(eventController *controllers.EventController) http.Handler {
 		})
 	})
 
-	router.Group(func(apiRouter chi.Router) {
-		apiRouter.Use(middleware.RedirectSlashes)
+	//router.Group(func(apiRouter chi.Router) {
+	//	apiRouter.Use(middleware.RedirectSlashes)
+	//
+	//	apiRouter.Route("/v1", func(apiRouter chi.Router) {
+	//		AddEventRoutes(&apiRouter, eventController)
+	//
+	//		apiRouter.Handle("/*", NotFoundJSON())
+	//	})
+	//})
 
-		apiRouter.Route("/v1", func(apiRouter chi.Router) {
+	router.Route("/v1", func(apiRouter chi.Router) {
+		apiRouter.Group(func(apiRouter chi.Router) {
 			AddEventRoutes(&apiRouter, eventController)
-
 			apiRouter.Handle("/*", NotFoundJSON())
 		})
 	})
@@ -36,14 +43,24 @@ func Router(eventController *controllers.EventController) http.Handler {
 }
 
 func AddEventRoutes(router *chi.Router, eventController *controllers.EventController) {
-	(*router).Route("/events", func(apiRouter chi.Router) {
+	(*router).Use(middleware.Logger)
+	(*router).Route("/event", func(apiRouter chi.Router) {
 		apiRouter.Get(
 			"/",
-			eventController.FindAll(),
-		)
-		apiRouter.Get(
-			"/{id}",
 			eventController.FindOne(),
 		)
+		apiRouter.Get(
+			"/all",
+			eventController.FindAll(),
+		)
+		apiRouter.Post(
+			"/add",
+			eventController.Create())
+		apiRouter.Put(
+			"/update",
+			eventController.Update())
+		apiRouter.Delete(
+			"/delete",
+			eventController.Delete())
 	})
 }
