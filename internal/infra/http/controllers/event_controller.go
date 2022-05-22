@@ -19,19 +19,23 @@ func NewEventController(s *event.Service) *EventController {
 
 func (c *EventController) FindAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		events, err := (*c.service).FindAll()
-		if err != nil {
-			fmt.Printf("EventController.FindAll(): %s", err)
-			err = internalServerError(w, err)
+		if r.Method == http.MethodGet {
+			events, err := (*c.service).FindAll()
 			if err != nil {
-				fmt.Printf("EventController.FindAll(): %s", err)
+				log.Printf("EventController.FindAll(): %s", err)
+				err = internalServerError(w, err)
+				if err != nil {
+					log.Printf("EventController.FindAll(): %s", err)
+				}
+				return
 			}
+			err = success(w, events)
+			if err != nil {
+				log.Printf("EventController.FindAll(): %s", err)
+			}
+		} else {
+			log.Printf("http.Request.Method is not GET")
 			return
-		}
-
-		err = success(w, events)
-		if err != nil {
-			fmt.Printf("EventController.FindAll(): %s", err)
 		}
 	}
 }
@@ -39,6 +43,9 @@ func (c *EventController) FindAll() http.HandlerFunc {
 func (c *EventController) FindOne() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.Header.Get("id")
+		if id == "" {
+			panic("Headers parameter id = \"\". Please, repeat Request with value")
+		}
 		log.Printf("id:%s", id)
 		eventFind, err := (*c.service).FindOne(id)
 		if err != nil {
@@ -62,6 +69,10 @@ func (c *EventController) Create() http.HandlerFunc {
 		name := r.PostFormValue("name")
 		description := r.PostFormValue("description")
 		dateAndTime := r.PostFormValue("date_and_time")
+
+		if name == "" || description == "" || dateAndTime == "" {
+			panic("Name or description or date_and_time don`t have value. All fields ARE REQUIRED!. Please, repeat Request with value")
+		}
 
 		eventNew := event.Event{
 			ID:          "",
@@ -88,10 +99,15 @@ func (c *EventController) Create() http.HandlerFunc {
 
 func (c *EventController) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		id := r.PostFormValue("id")
 		name := r.PostFormValue("name")
 		description := r.PostFormValue("description")
 		dateAndTime := r.PostFormValue("date_and_time")
+
+		if id == "" {
+			panic("id = \"\". ID is REQUIRED. Please, repeat Request with value")
+		}
 
 		event := event.Event{
 			ID:          id,
@@ -111,26 +127,31 @@ func (c *EventController) Update() http.HandlerFunc {
 
 		err = success(w, events)
 		if err != nil {
-			log.Printf("EventController.Create(): %s", err)
+			log.Printf("EventController.Update(): %s", err)
 		}
 	}
 }
 func (c *EventController) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := r.Header.Get("id")
+
+		if id == "" {
+			panic("id = \"\". ID is REQUIRED. Please, repeat Request with value")
+		}
+
 		events, err := (*c.service).Delete(id)
 		if err != nil {
-			log.Printf("EventController.Update(): %s", err)
+			log.Printf("EventController.Delete(): %s", err)
 			err = internalServerError(w, err)
 			if err != nil {
-				log.Printf("EventController.Update(): %s", err)
+				log.Printf("EventController.Delete(): %s", err)
 			}
 			return
 		}
 
 		err = success(w, events)
 		if err != nil {
-			log.Printf("EventController.Create(): %s", err)
+			log.Printf("EventController.Delete(): %s", err)
 		}
 	}
 }

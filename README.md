@@ -1,6 +1,6 @@
             ## CRUD REST-API ##
 
-            ## Get Event (by ID)
+            ## GET EVENT BY ID ##
 
             ## GET http://localhost:8081/v1/event/
 
@@ -11,27 +11,27 @@
             ## ID field IS REQUIRED!
             ## return Event from db
 
-            ##Get All Events
+            ## GET ALL EVENTS ##
 
             ##GET http://localhost:8081/v1/event/all
 
             ##return list all Events from db
 
-            ##Add new Event
+            ## ADD NEW EVENT ##
 
             ##POST http://localhost:8081/v1/event/add
 
             ##Body:
-            ##x-www-form-urlencoded:
-            ##name
-            ##description
-            ##date_and_time
+                ##x-www-form-urlencoded:
+                    ##name
+                    ##description
+                    ##date_and_time
 
-            ##All fields ARE REQUIRED!
+            ## All fields ARE REQUIRED! ##
 
             ##return added Event (id, name, description and date_and_time)
 
-            ##Update Event
+            ## UPDATE EVENT ##
 
             ##PUT http://localhost:8081/v1/event/update
 
@@ -46,7 +46,7 @@
 
             ##return updated Event with new fields (name, description and date_and_time)
 
-            ##Delete Event
+            ## DELETE EVENT ##
 
             ##DELETE http://localhost:8081/v1/event/delete
 

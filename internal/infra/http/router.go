@@ -22,19 +22,12 @@ func Router(eventController *controllers.EventController) http.Handler {
 		})
 	})
 
-	//router.Group(func(apiRouter chi.Router) {
-	//	apiRouter.Use(middleware.RedirectSlashes)
-	//
-	//	apiRouter.Route("/v1", func(apiRouter chi.Router) {
-	//		AddEventRoutes(&apiRouter, eventController)
-	//
-	//		apiRouter.Handle("/*", NotFoundJSON())
-	//	})
-	//})
+	router.Group(func(apiRouter chi.Router) {
+		apiRouter.Use(middleware.RedirectSlashes)
 
-	router.Route("/v1", func(apiRouter chi.Router) {
-		apiRouter.Group(func(apiRouter chi.Router) {
+		apiRouter.Route("/v1", func(apiRouter chi.Router) {
 			AddEventRoutes(&apiRouter, eventController)
+
 			apiRouter.Handle("/*", NotFoundJSON())
 		})
 	})
