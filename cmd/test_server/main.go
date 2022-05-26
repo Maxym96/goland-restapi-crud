@@ -44,10 +44,11 @@ func main() {
 
 	//Connection to PostgreSQL
 	client, err := postgresql.NewClient()
+
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("postgresql.NewClient() error: %s", err)
+		return
 	}
-	log.Println(client)
 
 	// Event
 	eventRepository := event.NewRepository(client)

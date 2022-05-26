@@ -1,8 +1,11 @@
 package controllers
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/test_server/internal/domain/event"
+	"io/ioutil"
 	"log"
 	"net/http"
 )
@@ -10,6 +13,8 @@ import (
 type EventController struct {
 	service *event.Service
 }
+
+var params event.Event
 
 func NewEventController(s *event.Service) *EventController {
 	return &EventController{
@@ -42,11 +47,19 @@ func (c *EventController) FindAll() http.HandlerFunc {
 
 func (c *EventController) FindOne() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		id := r.Header.Get("id")
+
 		if id == "" {
-			panic("Headers parameter id = \"\". Please, repeat Request with value")
+			err := errors.New("headers parameter id = \"\". Please, repeat Request with value")
+			err = badRequest(w, err)
+			if err != nil {
+				return
+			}
+			return
 		}
 		log.Printf("id:%s", id)
+
 		eventFind, err := (*c.service).FindOne(id)
 		if err != nil {
 			log.Printf("EventController.FindOne(): %s", err)
@@ -63,24 +76,36 @@ func (c *EventController) FindOne() http.HandlerFunc {
 		}
 	}
 }
+
 func (c *EventController) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		name := r.PostFormValue("name")
-		description := r.PostFormValue("description")
-		dateAndTime := r.PostFormValue("date_and_time")
+		bodyRead, err := ioutil.ReadAll(r.Body)
 
-		if name == "" || description == "" || dateAndTime == "" {
-			panic("Name or description or date_and_time don`t have value. All fields ARE REQUIRED!. Please, repeat Request with value")
+		if l := len(bodyRead); l == 0 {
+			err := errors.New("body does`t have Json. Please, repeat Request with Body (Json)")
+			err = badRequest(w, err)
+			if err != nil {
+				return
+			}
+			return
 		}
 
-		eventNew := event.Event{
-			ID:          "",
-			Name:        name,
-			Description: description,
-			DateAndTime: dateAndTime,
+		err = json.Unmarshal(bodyRead, &params)
+		if err != nil {
+			return
 		}
-		events, err := (*c.service).Create(eventNew)
+
+		if params.Name == "" || params.Description == "" || params.DateAndTime == "" {
+			err := errors.New("name or description or date_and_time don`t have value. All fields ARE REQUIRED!. Please, repeat Request with value")
+			err = badRequest(w, err)
+			if err != nil {
+				return
+			}
+			return
+		}
+
+		events, err := (*c.service).Create(params)
 		if err != nil {
 			log.Printf("EventController.Create(): %s", err)
 			err = internalServerError(w, err)
@@ -100,22 +125,33 @@ func (c *EventController) Create() http.HandlerFunc {
 func (c *EventController) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		id := r.PostFormValue("id")
-		name := r.PostFormValue("name")
-		description := r.PostFormValue("description")
-		dateAndTime := r.PostFormValue("date_and_time")
+		bodyRead, err := ioutil.ReadAll(r.Body)
 
-		if id == "" {
-			panic("id = \"\". ID is REQUIRED. Please, repeat Request with value")
+		if l := len(bodyRead); l == 0 {
+			err := errors.New("body does`t have Json. Please, repeat Request with Body (Json)")
+			err = badRequest(w, err)
+			if err != nil {
+				return
+			}
+			return
 		}
 
-		event := event.Event{
-			ID:          id,
-			Name:        name,
-			Description: description,
-			DateAndTime: dateAndTime,
+		err = json.Unmarshal(bodyRead, &params)
+		log.Println(params)
+		if err != nil {
+			return
 		}
-		events, err := (*c.service).Update(event)
+
+		if params.ID == "" {
+			err := errors.New("id = \"\". ID is REQUIRED. Please, repeat Request with value")
+			err = badRequest(w, err)
+			if err != nil {
+				return
+			}
+			return
+		}
+
+		events, err := (*c.service).Update(params)
 		if err != nil {
 			log.Printf("EventController.Update(): %s", err)
 			err = internalServerError(w, err)
@@ -131,12 +167,19 @@ func (c *EventController) Update() http.HandlerFunc {
 		}
 	}
 }
+
 func (c *EventController) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		id := r.Header.Get("id")
 
 		if id == "" {
-			panic("id = \"\". ID is REQUIRED. Please, repeat Request with value")
+			err := errors.New("id = ''. ID is REQUIRED. Please, repeat Request with value")
+			err = badRequest(w, err)
+			if err != nil {
+				return
+			}
+			return
 		}
 
 		events, err := (*c.service).Delete(id)

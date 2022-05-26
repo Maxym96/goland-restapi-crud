@@ -11,8 +11,10 @@ import (
 func NewClient() (db *db.Session, err error) {
 
 	if err = godotenv.Load(); err != nil {
-		log.Print("No .env file found")
+		log.Println("No .env file found")
+		return nil, err
 	}
+
 	BdHost := os.Getenv("BD_HOST")
 	BdDatabase := os.Getenv("BD_DATABASE")
 	BdUser := os.Getenv("BD_USER")
@@ -27,12 +29,14 @@ func NewClient() (db *db.Session, err error) {
 	sess, err := postgresql.Open(settings)
 
 	if err != nil {
-		log.Fatal("postgresql.Open: ", err)
+		log.Println("cannot open postgresql: ")
+		return nil, err
 	}
-	//defer sess.Close()
+	defer sess.Close()
 
-	if err := sess.Ping(); err != nil {
-		log.Fatal("Ping: ", err)
+	if err = sess.Ping(); err != nil {
+		log.Println("canntot ping")
+		return nil, err
 	}
 	log.Printf("Successfully connected to database: %q", sess.Name())
 
