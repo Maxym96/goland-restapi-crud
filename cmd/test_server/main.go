@@ -43,7 +43,9 @@ func main() {
 	}()
 
 	//Connection to PostgreSQL
-	client, err := postgresql.NewClient()
+	client, sessionClose, err := postgresql.NewClient()
+
+	defer sessionClose.Close()
 
 	if err != nil {
 		log.Printf("postgresql.NewClient() error: %s", err)
